@@ -1,4 +1,4 @@
-#
+
 library(tidyverse)
 library(readr)
 library(fs)
@@ -44,7 +44,7 @@ x <- map_dfr(my_list, read_csv, .id = "name") %>%
     TRUE ~ "HSE")) %>% 
   
   #Extract district number from "names" variable with str_extract. Parse district as a number. 
-  mutate(district = str_extract(names, pattern = "[\\d]{2}-[\\d].csv$")) %>% 
+  mutate(district = str_extract(name, pattern = "[\\d]{2}-[\\d].csv$")) %>% 
   mutate(district = parse_integer(str_sub(district, 1, 2))) %>% 
   
   #Format district into (ST-00) form. Set District to NA if the poll is for a Sen/Gov race. The
@@ -52,7 +52,25 @@ x <- map_dfr(my_list, read_csv, .id = "name") %>%
   
   mutate(District = paste(state, district, sep = "-")) %>% 
   mutate(District = ifelse(is.na(district), NA, District)) %>% 
-  mutate(Office = ifelse(is.na(district), paste(state, office, sep = "-"), District))
+  mutate(Office = ifelse(is.na(district), paste(state, office, sep = "-"), District)) %>% 
+  
+  # Select the variables I need. 
+  select(name, response, age_combined, likely, state, wave, office, district, District, Office ) %>% 
+  
+  #Filter out Senator and Governor Races
+  filter(! office %in% c("SEN", "GOV"))
+
+  
+#Explore x
+glimpse(x)
+summary(x)
+unique(x$wave)
+unique(x$state)
+unique(x$office)
+
+
+#Analyze age_combined variable because it has a smaller range for young voters (18-29). I want to look at the share 
+#of young voters in specific counties, so I thought this was fitting. 
 
 
 
