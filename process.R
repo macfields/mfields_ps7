@@ -95,7 +95,7 @@ shiny_data <- left_join(forecasts, results, by = "Office") %>%
   rename(forecast = rep_adv) %>%
   select(Office, state, forecast, result, percent_18to29,win_name, win_party)
 
-
+write_rds(shiny_data, "ps_7/shiny_data.rds")
 
 
 
