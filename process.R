@@ -55,22 +55,46 @@ x <- map_dfr(my_list, read_csv, .id = "name") %>%
   mutate(Office = ifelse(is.na(district), paste(state, office, sep = "-"), District)) %>% 
   
   # Select the variables I need. 
-  select(name, response, age_combined, likely, state, wave, office, district, District, Office ) %>% 
+  select(name, response, age_combined, likely, state, wave, office, district, District, Office, final_weight ) %>% 
   
   #Filter out Senator and Governor Races
   filter(! office %in% c("SEN", "GOV"))
 
-  
-#Explore x
-glimpse(x)
-summary(x)
-unique(x$wave)
-unique(x$state)
-unique(x$office)
+#This code is from the midterm 2 solutions. Make a tibble of only the races that were polled more than once. 
+two_waves <- x %>% 
+  group_by(Office) %>% 
+  summarize(waves = n_distinct(wave), 
+            first_wave = min(wave)) %>% 
+  filter(waves >1)
 
+#dataframe with last poll from each Upshot Race. 
+forecasts <- anti_join(x, two_waves, 
+                       by = c("Office" = "Office", "wave" = "first_wave")) %>% 
+  mutate(rep = ifelse(response == "Rep", final_weight, 0)) %>% 
+  mutate(dem = ifelse(response == "Dem", final_weight, 0)) %>% 
+  group_by(Office) %>% 
+    summarize(interviews = n(),  
+              rep_adv = (sum(rep) - sum(dem)) / n(), 
+              percent_18to29 = 100 * sum(age_combined == "18 to 29")/interviews)
 
-#Analyze age_combined variable because it has a smaller range for young voters (18-29). I want to look at the share 
-#of young voters in specific counties, so I thought this was fitting. 
+#get actual election results
+results <- results %>% 
+  mutate(district_number = parse_integer(district, na = c("AL", "sen", "gov"))) %>% 
+  mutate(district_office = case_when(str_detect(district, "sen") ~ "SEN",
+                                     str_detect(district, "gov") ~ "GOV",
+                                     TRUE ~ NA_character_)) %>% 
+  mutate(Office = ifelse(is.na(district_number), 
+                         paste(state, district_office, sep = "-"),
+                         paste(state, district_number, sep = "-")))
+
+shiny_data <- left_join(forecasts, results, by = "Office") %>% 
+  mutate(rep_votes = as.numeric(rep_votes), 
+         dem_votes = as.numeric(dem_votes),
+         other_votes = as.numeric(other_votes)) %>% 
+  mutate(result = (rep_votes - dem_votes) / (rep_votes + dem_votes + other_votes)) %>% 
+  rename(forecast = rep_adv) %>%
+  select(Office, state, forecast, result, percent_18to29,win_name, win_party)
+
 
 
 
