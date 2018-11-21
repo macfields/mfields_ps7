@@ -33,7 +33,8 @@ ui <- fluidPage(theme = shinytheme("superhero"),
                      choices = dataset$demographic), 
          
          #Add checkbox for the user to decide whether or not to add linear model. Note: This line of code is from Ms. Gayton's code.
-         checkboxInput("line", label = "Add Linear Model")
+         checkboxInput("line", label = "Add Linear Model") 
+         
        
       ),
       
