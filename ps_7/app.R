@@ -84,6 +84,7 @@ server <- function(input, output, session) {
      
    })
    
+   #Creates datatable to be show in the Data tab. Use filtered(), which is reactive to user input. 
    output$datatable <- renderDataTable({
      filtered <- reactive({
        df<- dataset %>% filter(demographic == input$demographic) 
