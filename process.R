@@ -8,7 +8,7 @@ library(reshape2)
 
 
 #Downloading Upshot Data. "wb" makes sure that the download works whether on Mac or PC. 
-download.file(url = "https://goo.gl/ZRCBda",
+download.file(url = "https://github.com/TheUpshot/2018-live-poll-results/archive/master.zip",
               destfile = "master.zip",
               quiet = TRUE,
               mode = "wb")
